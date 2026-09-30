@@ -8,14 +8,14 @@ client = TestClient(app)
 def test_health():
     response = client.get("/health")
     assert response.status_code == 200
-    assert response.json()["status"] == "ok"
+    assert response.json()["status"] == "healthy"
 
 
 def test_model_metadata():
     response = client.get("/model")
     assert response.status_code == 200
-    assert response.json()["name"] == "ticket_classifier"
-    assert response.json()["alias"] == "champion"
+    assert response.json()["model_name"] == "ticket_classifier"
+    assert response.json()["model_alias"] == "champion"
 
 
 def test_prediction_requires_four_features():

@@ -3,7 +3,6 @@ from fastapi import FastAPI, HTTPException
 from app.model_loader import MODEL_ALIAS, MODEL_NAME, model_loader
 from app.schemas import PredictionRequest, PredictionResponse
 
-
 app = FastAPI(
     title="MLOps Model Serving API",
     description=(
