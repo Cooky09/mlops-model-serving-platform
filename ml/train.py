@@ -1,4 +1,5 @@
 import os
+
 import mlflow
 import mlflow.pytorch
 import torch
@@ -8,7 +9,6 @@ from torch.optim import Adam
 
 from ml.data import make_dataset
 from ml.model import build_model
-
 
 EXPERIMENT_NAME = "ticket-classifier-v2"
 MODEL_NAME = os.getenv("MLFLOW_MODEL_NAME", "ticket_classifier")

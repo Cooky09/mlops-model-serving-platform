@@ -10,7 +10,6 @@ from app.schemas import (
     PredictionResponse,
 )
 
-
 app = FastAPI(
     title="MLOps Model Serving API",
     description=(
