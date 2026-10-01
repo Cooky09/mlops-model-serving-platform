@@ -19,7 +19,8 @@ MLFLOW_TRACKING_URI = os.getenv(
 
 EPOCHS = 30
 LEARNING_RATE = 0.01
-
+RANDOM_SEED = 42
+N_SAMPLES = 1000
 
 def main() -> None:
     # Connect to MLflow
@@ -27,7 +28,7 @@ def main() -> None:
     mlflow.set_experiment(EXPERIMENT_NAME)
 
     # Load dataset
-    X_train, X_val, y_train, y_val = make_dataset()
+    X_train, X_val, y_train, y_val = make_dataset(n_samples = N_SAMPLES,seed = RANDOM_SEED,)
 
     # Build model
     model = build_model()
@@ -110,6 +111,8 @@ def main() -> None:
             {
                 "epochs": EPOCHS,
                 "learning_rate": LEARNING_RATE,
+                "random_seed": RANDOM_SEED,
+                "n_samples": N_SAMPLES,
                 "architecture": "4-16-8-1",
                 "optimizer": "Adam",
                 "loss_function": "BCELoss",
