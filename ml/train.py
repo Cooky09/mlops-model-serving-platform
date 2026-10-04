@@ -3,6 +3,7 @@ import os
 import mlflow
 import mlflow.pytorch
 import torch
+from mlflow import MLflowClient
 from mlflow.models import infer_signature
 from torch import nn
 from torch.optim import Adam
@@ -12,6 +13,7 @@ from ml.model import build_model
 
 EXPERIMENT_NAME = "ticket-classifier-v2"
 MODEL_NAME = os.getenv("MLFLOW_MODEL_NAME", "ticket_classifier")
+MODEL_ALIAS = os.getenv("MLFLOW_MODEL_ALIAS", "production")
 MLFLOW_TRACKING_URI = os.getenv(
     "MLFLOW_TRACKING_URI",
     "http://localhost:5000",
@@ -155,6 +157,13 @@ def main() -> None:
             signature=signature,
             registered_model_name=MODEL_NAME,
             serialization_format="pickle",
+        )
+
+        client = MLflowClient()
+        client.set_registered_model_alias(
+            MODEL_NAME,
+            MODEL_ALIAS,
+            model_info.registered_model_version,
         )
 
         # -----------------------------
