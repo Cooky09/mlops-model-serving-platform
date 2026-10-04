@@ -1,18 +1,17 @@
-# MLOps Model Serving Platform
+MLOps Model Serving Platform
 
-Production-style machine learning model serving platform demonstrating an end-to-end MLOps workflow using **PyTorch, MLflow, FastAPI, Docker, CI/CD, and Azure**.
+Production-style machine learning model serving platform demonstrating an end-to-end MLOps workflow using PyTorch, MLflow, FastAPI, Docker, GitHub Actions, and Azure.
 
-The project covers the lifecycle of a machine learning model from training and experiment tracking through model registration, versioning, deployment, and API-based inference.
+The project demonstrates the lifecycle of a machine learning model from deterministic training and experiment tracking through model registration, versioning, promotion, rollback, and API-based inference.
 
----
+⸻
 
-## Overview
+Overview
 
-This project demonstrates how a trained machine learning model can be moved from a development environment into a reproducible, containerized serving environment.
+This project demonstrates how a trained machine learning model can move from development into a reproducible, containerized serving environment.
 
-The platform implements the following workflow:
+The platform currently implements:
 
-```text
                     ┌─────────────────────┐
                     │     PyTorch Model   │
                     │      Training       │
@@ -29,7 +28,12 @@ The platform implements the following workflow:
                     ┌─────────────────────┐
                     │   Model Registry    │
                     │ Versions + Aliases  │
-                    │     "champion"      │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │ Model Promotion /   │
+                    │     Rollback        │
                     └──────────┬──────────┘
                                │
                                ▼
@@ -50,63 +54,70 @@ The platform implements the following workflow:
                     │   CI/CD + Azure     │
                     │ Automated Delivery  │
                     └─────────────────────┘
-```
 
----
+⸻
 
-## What This Project Demonstrates
+What This Project Demonstrates
 
 The project focuses on practical MLOps engineering patterns:
 
 * PyTorch model development and training
 * Deterministic dataset generation
+* Reproducible training configuration
 * MLflow experiment tracking
 * Hyperparameter and metric logging
 * MLflow model artifact management
+* Model signatures
 * Model registration and versioning
 * MLflow model aliases
+* Model promotion
+* Model rollback
+* Model lifecycle testing
 * Dynamic model loading through a registry
 * FastAPI model serving
 * Request/response validation with Pydantic
 * Docker containerization
 * Docker Compose orchestration
-* Automated testing
+* Automated testing with Pytest
+* Code quality checks with Ruff
 * CI/CD with GitHub Actions
 * Infrastructure-as-code using Azure Bicep
 * Production-oriented configuration using environment variables
 
----
+⸻
 
-## Technology Stack
+Technology Stack
 
-| Area                 | Technology            |
-| -------------------- | --------------------- |
-| Programming Language | Python                |
-| Machine Learning     | PyTorch               |
-| Experiment Tracking  | MLflow                |
-| Model Registry       | MLflow Model Registry |
-| API                  | FastAPI               |
-| Validation           | Pydantic              |
-| Containerization     | Docker                |
-| Local Orchestration  | Docker Compose        |
-| Testing              | Pytest                |
-| Code Quality         | Ruff                  |
-| CI/CD                | GitHub Actions        |
-| Cloud                | Microsoft Azure       |
-| Infrastructure       | Azure Bicep           |
-| Version Control      | Git / GitHub          |
+Area	Technology
+Programming Language	Python
+Machine Learning	PyTorch
+Experiment Tracking	MLflow
+Model Registry	MLflow Model Registry
+API	FastAPI
+Validation	Pydantic
+Containerization	Docker
+Local Orchestration	Docker Compose
+Testing	Pytest
+Code Quality	Ruff
+CI/CD	GitHub Actions
+Cloud	Microsoft Azure
+Infrastructure	Azure Bicep
+Version Control	Git / GitHub
 
----
+⸻
 
-## Project Structure
+Project Structure
 
-```text
 mlops-model-serving-platform/
 │
 ├── .github/
-│   └── workflows/
-│       ├── ci.yml
-│       └── deploy-azure.yml
+│   ├── ISSUE_TEMPLATE/
+│   │   ├── bug_report.md
+│   │   └── feature_request.md
+│   ├── workflows/
+│   │   ├── ci.yml
+│   │   └── deploy-azure.yml
+│   └── pull_request_template.md
 │
 ├── app/
 │   ├── __init__.py
@@ -117,12 +128,19 @@ mlops-model-serving-platform/
 ├── ml/
 │   ├── __init__.py
 │   ├── data.py
+│   ├── evaluate.py
+│   ├── lifecycle.py
 │   ├── model.py
 │   └── train.py
 │
 ├── tests/
 │   ├── __init__.py
-│   └── test_api.py
+│   ├── test_api.py
+│   ├── test_data.py
+│   ├── test_evaluate.py
+│   ├── test_lifecycle.py
+│   ├── test_model.py
+│   └── test_model_persistence.py
 │
 ├── infra/
 │   └── azure-container-apps.bicep
@@ -130,6 +148,7 @@ mlops-model-serving-platform/
 ├── .dockerignore
 ├── .env.example
 ├── .gitignore
+├── CONTRIBUTING.md
 ├── Dockerfile
 ├── Dockerfile.mlflow
 ├── docker-compose.yml
@@ -137,43 +156,47 @@ mlops-model-serving-platform/
 ├── pyproject.toml
 ├── requirements.txt
 └── README.md
-```
 
----
+⸻
 
-# Machine Learning Workflow
+Machine Learning Workflow
 
-## 1. Dataset Generation
+1. Dataset Generation
 
 The project generates a deterministic binary classification dataset using NumPy.
 
 The dataset contains four numerical features:
 
-```text
 Feature 1
 Feature 2
 Feature 3
 Feature 4
-```
 
-A deterministic random seed is used so that training runs are reproducible.
+A fixed random seed is used so that dataset generation is reproducible across training runs.
+
+The current configuration uses:
+
+Random seed: 42
+Samples:     1000
+Features:    4
 
 The generated data is split into:
 
-```text
 80% Training
 20% Validation
-```
 
----
+The dataset generation logic is implemented in:
 
-## 2. PyTorch Model
+ml/data.py
+
+⸻
+
+2. PyTorch Model
 
 The classifier is implemented using PyTorch.
 
 Architecture:
 
-```text
 Input: 4 features
        │
        ▼
@@ -193,41 +216,63 @@ Linear(8 → 1)
        │
        ▼
 Binary Prediction
-```
 
-Training uses:
+The current training configuration uses:
 
-* Adam optimizer
-* Binary Cross Entropy loss
-* 30 training epochs
-* Learning rate of `0.01`
+Epochs:          30
+Learning rate:   0.01
+Optimizer:       Adam
 
----
+The model implementation is located in:
 
-# MLflow Experiment Tracking
+ml/model.py
+
+⸻
+
+Model Evaluation
+
+Model evaluation is separated from the training implementation.
+
+The evaluation module calculates classification metrics including:
+
+Accuracy
+Precision
+Recall
+F1 Score
+
+Evaluation logic is implemented in:
+
+ml/evaluate.py
+
+Automated tests verify the metric calculations independently from the training pipeline.
+
+⸻
+
+MLflow Experiment Tracking
 
 MLflow is used to track training experiments and manage model artifacts.
 
-The training pipeline records:
+The training pipeline records configuration and performance information for each run.
 
-### Parameters
+Parameters
 
-```text
+Examples include:
+
 epochs
 learning_rate
-architecture
-optimizer
-loss_function
-```
+random_seed
+n_samples
 
-### Metrics
+Metrics
 
-```text
-validation loss
-validation accuracy
-```
+The evaluation pipeline records classification metrics including:
 
-### Model
+accuracy
+precision
+recall
+f1
+
+Model Artifact
 
 The trained PyTorch model is logged to MLflow with:
 
@@ -235,54 +280,126 @@ The trained PyTorch model is logged to MLflow with:
 * Example input
 * Serialized model artifact
 * Model metadata
+* Registered model name
 
----
+The training implementation is located in:
 
-# Model Registry
+ml/train.py
+
+⸻
+
+Model Registry
 
 The trained model is registered in the MLflow Model Registry.
 
 Example model:
 
-```text
 ticket_classifier
-```
 
 Model versions allow multiple trained models to coexist.
 
 For example:
 
-```text
 ticket_classifier
 │
 ├── Version 1
 ├── Version 2
 └── Version 3
-```
 
-The API does not need to hard-code a specific model version.
+Each registered version represents a distinct model artifact produced by the training pipeline.
 
-Instead, it loads the model using an MLflow alias:
+⸻
 
-```text
-models:/ticket_classifier@champion
-```
+Model Lifecycle
 
-This allows the deployed API to consume whichever model version is assigned to the `champion` alias.
+The platform implements a model lifecycle that goes beyond simply storing model artifacts.
 
-This provides a simple mechanism for model promotion without changing application code.
+The lifecycle is:
 
----
+Training
+   │
+   ▼
+Model Registration
+   │
+   ▼
+New Model Version
+   │
+   ▼
+Production Alias
+   │
+   ▼
+Model Serving
+   │
+   ├──────────────┐
+   │              │
+   │              ▼
+   │           Rollback
+   │              │
+   │              ▼
+   └──────► Previous Version
 
-# Model Serving
+The lifecycle supports:
+
+Registration
+
+A trained model is registered in MLflow and assigned a model version.
+
+Promotion
+
+The newly registered model version can be assigned to the configured production alias.
+
+The default alias is:
+
+production
+
+Serving
+
+The API can resolve a model through an alias instead of depending on a hard-coded model version.
+
+For example:
+
+models:/ticket_classifier@production
+
+This allows the model version behind the alias to change without modifying application code.
+
+Rollback
+
+A production alias can be moved back to a previous registered model version.
+
+The rollback helper is implemented in:
+
+ml/lifecycle.py
+
+This provides a simple mechanism for restoring a previous model version without rebuilding the serving application.
+
+⸻
+
+Model Lifecycle Testing
+
+The model lifecycle is covered by automated tests.
+
+The tests verify:
+
+* Production alias movement
+* Model promotion behaviour
+* Model rollback behaviour
+* Interaction with the MLflow client
+* Lifecycle behaviour without requiring a live MLflow deployment
+
+Lifecycle tests are located in:
+
+tests/test_lifecycle.py
+
+External MLflow interactions are mocked where appropriate so that the tests remain deterministic and fast.
+
+⸻
+
+Model Serving
 
 The model is served through FastAPI.
 
-The API loads the registered MLflow model when inference is requested.
-
 The serving flow is:
 
-```text
 HTTP Request
      │
      ▼
@@ -298,62 +415,52 @@ Model Loader
 MLflow Model Registry
      │
      ▼
-Champion Model
+Production Model
      │
      ▼
 Prediction
      │
      ▼
 JSON Response
-```
 
----
+The application separates model-serving logic from the training pipeline.
 
-# API Endpoints
+⸻
 
-## Health Check
+API Endpoints
 
-```http
+Health Check
+
 GET /health
-```
 
 Example response:
 
-```json
 {
   "status": "healthy"
 }
-```
 
----
+⸻
 
-## Model Information
+Model Information
 
-```http
 GET /model
-```
 
 Example response:
 
-```json
 {
   "model_name": "ticket_classifier",
-  "model_alias": "champion",
+  "model_alias": "production",
   "tracking_uri": "http://mlflow:5000"
 }
-```
 
----
+⸻
 
-## Prediction
+Prediction
 
-```http
 POST /predict
-```
 
 Example request:
 
-```json
 {
   "features": [
     0.1,
@@ -362,44 +469,39 @@ Example request:
     0.4
   ]
 }
-```
 
 Example response:
 
-```json
 {
   "prediction": 1,
   "probability": 0.5296782851219177,
   "model_name": "ticket_classifier",
-  "model_alias": "champion"
+  "model_alias": "production"
 }
-```
 
 The API validates that exactly four numerical features are supplied.
 
----
+⸻
 
-# Interactive API Documentation
+Interactive API Documentation
 
 Once the API is running, FastAPI provides interactive documentation.
 
 Open:
 
-```text
 http://localhost:8000/docs
-```
 
-This can be used to test:
+The documentation can be used to test:
 
 * Health checks
 * Model metadata
 * Prediction requests
 
----
+⸻
 
-# Local Development
+Local Development
 
-## Prerequisites
+Prerequisites
 
 Install:
 
@@ -409,244 +511,264 @@ Install:
 
 Verify Python:
 
-```powershell
 python --version
-```
 
 Verify Docker:
 
-```powershell
 docker --version
 docker compose version
-```
 
----
+⸻
 
-## Create Virtual Environment
+Create Virtual Environment
 
 Windows PowerShell:
 
-```powershell
 python -m venv .venv
-```
 
 Activate:
 
-```powershell
 .\.venv\Scripts\Activate.ps1
-```
 
 Install dependencies:
 
-```powershell
 pip install -r requirements.txt
-```
 
----
+⸻
 
-# Running MLflow and FastAPI
+Running MLflow and FastAPI
 
 The recommended local setup uses Docker Compose.
 
 Start the services:
 
-```powershell
 docker compose up --build
-```
 
 This starts:
 
-```text
 FastAPI
     │
     └── http://localhost:8000
-
 MLflow
     │
     └── http://localhost:5000
-```
 
 FastAPI documentation:
 
-```text
 http://localhost:8000/docs
-```
 
 MLflow UI:
 
-```text
 http://localhost:5000
-```
 
----
+⸻
 
-# Training the Model
+Training the Model
 
 The training script connects to the MLflow tracking server and creates a training run.
 
-From the project environment:
+Run:
 
-```powershell
 python -m ml.train
-```
 
 The training pipeline:
 
-1. Creates the dataset
+1. Creates the deterministic dataset
 2. Builds the PyTorch model
 3. Trains the model
 4. Evaluates validation performance
-5. Logs parameters to MLflow
-6. Logs metrics to MLflow
-7. Creates a model signature
-8. Logs the model artifact
-9. Registers the model
+5. Calculates classification metrics
+6. Logs parameters to MLflow
+7. Logs metrics to MLflow
+8. Creates a model signature
+9. Logs the model artifact
+10. Registers the model
+11. Assigns the configured alias to the registered version
 
----
+⸻
 
-# Model Promotion
+Model Promotion
 
 After training, MLflow creates a new model version.
 
-The model can then be assigned an alias such as:
+The training pipeline assigns the configured alias to the registered version.
 
-```text
-champion
-```
+By default:
 
-The serving application resolves:
+production
 
-```text
-models:/ticket_classifier@champion
-```
+The serving application can resolve:
 
-rather than depending on a hard-coded model version.
+models:/ticket_classifier@production
+
+rather than depending on a hard-coded version.
 
 This separates:
 
-```text
 Model training
-```
 
 from:
 
-```text
-Model deployment
-```
+Model serving
 
-and makes model promotion easier to manage.
+and allows the production model version to change independently from the application code.
 
----
+⸻
 
-# Docker
+Model Rollback
+
+If a newly promoted model needs to be replaced, the production alias can be moved to a previous version.
+
+Conceptually:
+
+Before rollback:
+production → Version 3
+
+After rollback:
+
+production → Version 2
+
+The API continues resolving:
+
+models:/ticket_classifier@production
+
+so no application code change is required.
+
+This provides a simple model recovery mechanism at the registry level.
+
+⸻
+
+Docker
 
 The API is packaged into a Docker image.
 
 Build the API image:
 
-```powershell
 docker compose build api
-```
 
 Start the application:
 
-```powershell
 docker compose up
-```
 
 Check running containers:
 
-```powershell
 docker compose ps
-```
 
 View API logs:
 
-```powershell
 docker compose logs api
-```
 
 View MLflow logs:
 
-```powershell
 docker compose logs mlflow
-```
 
----
+⸻
 
-# Testing
+Testing
 
-The project includes automated API tests using Pytest.
+The project includes automated tests covering:
 
-Run tests locally:
+* API behaviour
+* Dataset generation
+* Evaluation metrics
+* Model structure
+* Model persistence
+* Model lifecycle behaviour
 
-```powershell
+Run the full test suite:
+
 pytest
-```
 
-For a clean environment using the same containerized services:
+The test suite is designed to validate application behaviour without requiring every test to depend on a running external MLflow service.
 
-```powershell
-docker compose up --build
-```
+⸻
 
-The test suite is designed to validate API behaviour without coupling production images to development-only test dependencies.
-
----
-
-# Code Quality
+Code Quality
 
 Ruff is used for linting and code quality checks.
 
-Run Ruff:
+Run:
 
-```powershell
-ruff check .
-```
+python -m ruff check .
 
-The project also uses `pyproject.toml` to centralize Python tooling configuration.
+The project uses pyproject.toml to centralize Python tooling configuration.
 
----
+⸻
 
-# CI/CD
+Engineering Workflow
 
-GitHub Actions is used to automate validation and deployment workflows.
+Development follows a GitHub-based workflow:
+
+Issue
+  ↓
+Feature Branch
+  ↓
+Implementation
+  ↓
+Tests
+  ↓
+Ruff
+  ↓
+Commit
+  ↓
+Pull Request
+  ↓
+CI
+  ↓
+Merge
+
+The repository uses:
+
+* GitHub Issues for work tracking
+* Feature branches for changes
+* Pull requests for review and integration
+* GitHub Actions for automated validation
+* Protected main branch
+* Required CI checks before merging
+* Issue-linked pull requests
+
+The project documentation for contributors is available in:
+
+CONTRIBUTING.md
+
+⸻
+
+CI/CD
+
+GitHub Actions is used to automate validation and delivery workflows.
 
 The CI workflow performs automated checks such as:
 
-```text
-Push / Pull Request
+Pull Request / Push
         │
         ▼
 Install dependencies
         │
         ▼
-Run linting
+Run Ruff
         │
         ▼
-Run tests
+Run Pytest
         │
         ▼
-Build application
-```
+Build / validation
 
-This provides an automated quality gate before changes are merged or deployed.
+This provides an automated quality gate before changes are merged.
 
----
+Deployment automation is defined separately from CI.
 
-# Azure Deployment
+⸻
+
+Azure Deployment
 
 The project includes Azure infrastructure configuration using Bicep.
 
 Infrastructure is defined in:
 
-```text
 infra/azure-container-apps.bicep
-```
 
 The intended deployment architecture is:
 
-```text
 GitHub
    │
    ▼
@@ -663,37 +785,32 @@ Azure Container Apps
    │
    ▼
 FastAPI Model Serving
-```
 
-This demonstrates infrastructure-as-code and cloud deployment practices alongside the machine learning workflow.
+This provides a path toward cloud-hosted model serving using infrastructure-as-code.
 
----
+⸻
 
-# Configuration
+Configuration
 
 Application configuration is controlled through environment variables.
 
 Example:
 
-```env
 MLFLOW_TRACKING_URI=http://localhost:5000
 MLFLOW_MODEL_NAME=ticket_classifier
-MLFLOW_MODEL_ALIAS=champion
-```
+MLFLOW_MODEL_ALIAS=production
 
 The project includes:
 
-```text
 .env.example
-```
 
 Sensitive or machine-specific configuration should not be committed to Git.
 
----
+⸻
 
-# Engineering Decisions
+Engineering Decisions
 
-## Model Registry Instead of Bundling Models
+Model Registry Instead of Bundling Models
 
 The application does not package a specific trained model directly inside the API image.
 
@@ -701,67 +818,66 @@ Instead, the API retrieves the configured model from MLflow.
 
 This keeps:
 
-```text
 Application code
-```
 
 separate from:
 
-```text
 Model artifacts
-```
 
----
+and allows models to be updated independently of the application.
 
-## Alias-Based Model Loading
+⸻
 
-The API uses:
+Alias-Based Model Loading
 
-```text
-models:/ticket_classifier@champion
-```
+The API uses an MLflow alias such as:
 
-instead of:
+models:/ticket_classifier@production
 
-```text
+instead of directly referencing:
+
 models:/ticket_classifier/3
-```
 
-This allows model versions to change independently from the API deployment.
+This allows the model version behind the production alias to change without requiring an application code change.
 
----
+⸻
 
-## Containerized MLflow
+Model Rollback Through the Registry
 
-MLflow runs as a separate service from the FastAPI application.
+Rollback is implemented by moving the production alias to a previous registered version.
 
-This provides a clearer separation between:
+This means rollback can occur at the model lifecycle layer without rebuilding the API image.
 
-```text
-ML platform services
-```
+⸻
+
+Deterministic Training
+
+The training pipeline uses explicit dataset configuration and a fixed random seed.
+
+This makes training behaviour more reproducible and provides a consistent foundation for automated testing.
+
+⸻
+
+Containerized Services
+
+MLflow and FastAPI are separated into services for local development.
+
+This creates a clearer boundary between:
+
+MLOps platform services
 
 and:
 
-```text
 Inference services
-```
 
----
+⸻
 
-## Production Image Excludes Tests
-
-The production API image contains the application and model-serving dependencies but does not include the test suite.
-
-Testing dependencies and production dependencies can therefore remain separated.
-
----
-
-# Reproducibility
+Reproducibility
 
 The project uses several practices to improve reproducibility:
 
 * Deterministic dataset generation
+* Explicit random seed
 * Explicit dependency management
 * Docker containerization
 * Environment-based configuration
@@ -770,31 +886,138 @@ The project uses several practices to improve reproducibility:
 * Model signatures
 * Infrastructure-as-code
 * Automated CI checks
+* Automated test coverage
 
----
+⸻
 
-# Future Improvements
+Current Engineering Status
 
-Potential next steps include:
+The project is being developed incrementally through GitHub Issues and pull requests.
+
+Phase 1 — Engineering Foundation
+
+* GitHub development workflow
+* Pull request templates
+* Issue templates
+* Contributor workflow
+* Branch protection
+* CI quality gates
+
+Phase 2 — ML Pipeline
+
+* Deterministic dataset generation
+* Reproducible training configuration
+* Model evaluation metrics
+* Model artifact validation
+* Model persistence validation
+
+Phase 3 — Model Lifecycle
+
+* MLflow model registration
+* Model version management
+* Model promotion
+* Production alias management
+* Model rollback
+* Lifecycle integration testing
+
+Planned Phases
+
+Future work will extend the platform into:
+
+Observability
+     ↓
+Data / Model Drift
+     ↓
+Deployment Automation
+     ↓
+Production Hardening
+
+⸻
+
+Future Improvements
+
+Potential future improvements include:
+
+Observability
+
+* Prometheus metrics
+* Grafana dashboards
+* Structured logging
+* Request latency monitoring
+* Prediction monitoring
+* Model health monitoring
+
+Data and Model Monitoring
+
+* Data drift detection
+* Feature distribution monitoring
+* Prediction drift detection
+* Model performance monitoring
+* Automated evaluation gates
+
+Deployment
+
+* Automated model promotion
+* Canary deployments
+* Blue/green deployments
+* Production deployment workflows
+* Azure Container Apps deployment automation
+
+ML Platform Extensions
 
 * Real-world ticket classification dataset
 * Data versioning
 * Feature store integration
-* Model performance monitoring
-* Drift detection
-* Prometheus metrics
-* Grafana dashboards
-* Structured logging
 * Distributed training
 * GPU-based training
-* Automated model evaluation gates
-* Automated model promotion
-* Canary deployments
-* Blue/green deployments
 * Azure ML integration
 * Kubernetes deployment
-* Security and authentication for the inference API
 
----
+Security and Reliability
 
+* API authentication
+* Secrets management
+* Network security
+* Rate limiting
+* Dependency vulnerability scanning
+* Model access controls
 
+⸻
+
+Project Goal
+
+The long-term goal of this project is to demonstrate a complete production-oriented MLOps platform:
+
+        Data
+         │
+         ▼
+      Training
+         │
+         ▼
+     Evaluation
+         │
+         ▼
+  Experiment Tracking
+         │
+         ▼
+  Model Registration
+         │
+         ▼
+   Version Management
+         │
+         ▼
+      Promotion
+         │
+         ▼
+      Serving
+         │
+         ▼
+    Observability
+         │
+         ▼
+   Drift Detection
+         │
+         ▼
+     Deployment
+
+The emphasis is on reproducibility, automation, testability, model lifecycle management, and production-oriented engineering practices rather than simply training a machine learning model.
