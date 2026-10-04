@@ -148,7 +148,7 @@ def main() -> None:
         # -----------------------------
         # Log and register model
         # -----------------------------
-        mlflow.pytorch.log_model(
+        model_info = mlflow.pytorch.log_model(
             model,
             name="model",
             input_example=example_input.numpy(),
@@ -160,6 +160,7 @@ def main() -> None:
         # -----------------------------
         # Print results
         # -----------------------------
+        print(f"Model URI:      {model_info.model_uri}")
         print()
         print("=" * 60)
         print("TRAINING COMPLETE")
