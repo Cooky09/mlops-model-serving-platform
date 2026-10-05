@@ -49,3 +49,23 @@ def test_prediction_logs_request(mock_predict, caplog):
     assert "Prediction completed" in caplog.text
     assert "ticket_classifier" in caplog.text
     mock_predict.assert_called_once_with([0.1, 0.2, 0.3, 0.4])
+
+def test_metrics_endpoint_exposes_prometheus_metrics():
+    response = client.get("/metrics")
+
+    assert response.status_code == 200
+    assert "api_requests_total" in response.text
+    assert "api_request_latency_seconds" in response.text
+
+
+def test_health_request_is_recorded_in_metrics():
+    client.get("/health")
+
+    response = client.get("/metrics")
+
+    assert response.status_code == 200
+    assert (
+        'api_requests_total{endpoint="/health",method="GET",status="200"}'
+        in response.text
+    )
+    assert "api_request_latency_seconds" in response.text
