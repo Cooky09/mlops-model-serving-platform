@@ -29,6 +29,13 @@ class ModelLoader:
             model_uri = f"models:/{MODEL_NAME}@{MODEL_ALIAS}"
             self.model = mlflow.pyfunc.load_model(model_uri)
         return self.model
+        
+    def is_healthy(self) -> bool:
+        try:
+            self.load()
+            return True
+        except Exception:
+            return False
 
     def predict(self, features: list[float]) -> float:
         model = self.load()

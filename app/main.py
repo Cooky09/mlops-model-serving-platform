@@ -35,6 +35,25 @@ def health() -> dict[str, str]:
 
     logger.info("Health check requested")
 
+    if not model_loader.is_healthy():
+        logger.error("Model dependency is unhealthy")
+
+        REQUEST_COUNT.labels(
+            endpoint="/health",
+            method="GET",
+            status="503",
+        ).inc()
+
+        REQUEST_LATENCY.labels(
+            endpoint="/health",
+            method="GET",
+        ).observe(time.perf_counter() - start_time)
+
+        raise HTTPException(
+            status_code=503,
+            detail="Model dependency unavailable",
+        )
+
     response = {
         "status": "healthy",
     }
