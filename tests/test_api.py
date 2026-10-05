@@ -79,3 +79,16 @@ def test_health_reports_unhealthy_model_dependency(mock_is_healthy):
     assert response.status_code == 503
     assert response.json()["detail"] == "Model dependency unavailable"
     mock_is_healthy.assert_called_once()
+
+def test_unhealthy_model_dependency_is_recorded_in_metrics():
+    with patch(
+        "app.main.model_loader.is_healthy",
+        return_value=False,
+    ):
+        response = client.get("/health")
+    assert response.status_code == 503
+    metrics_response = client.get("/metrics")
+    assert (
+        'api_requests_total{endpoint="/health",method="GET",status="503"}'
+        in metrics_response.text
+    )
