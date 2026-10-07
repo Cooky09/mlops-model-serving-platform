@@ -984,6 +984,47 @@ Security and Reliability
 
 ⸻
 
+Drift Monitoring
+
+The platform includes automated checks for both input data drift and prediction drift.
+
+Data Drift
+
+Data drift compares a baseline feature distribution with a current feature distribution. The current implementation compares feature means and flags drift when the difference exceeds a configurable threshold.
+
+calculate_feature_drift(
+    baseline,
+    current,
+    threshold=0.1,
+)
+
+Prediction Drift
+
+Prediction drift compares the mean of baseline predictions with the mean of current predictions. A configurable threshold determines whether the prediction distribution has shifted significantly.
+
+calculate_prediction_drift(
+    baseline,
+    current,
+    threshold=0.1,
+)
+
+Drift Reporting
+
+The two drift checks can be combined into a machine-readable report:
+
+build_drift_report(
+    data_drift=True,
+    prediction_drift=False,
+)
+
+The report contains:
+
+* data_drift — whether input feature drift was detected
+* prediction_drift — whether prediction drift was detected
+* drift_detected — whether either drift check detected a change
+
+This provides a simple foundation for integrating drift detection into monitoring and future deployment workflows.
+
 Project Goal
 
 The long-term goal of this project is to demonstrate a complete production-oriented MLOps platform:
