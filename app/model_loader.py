@@ -15,12 +15,25 @@ MODEL_NAME = os.getenv(
 )
 MODEL_ALIAS = os.getenv(
     "MLFLOW_MODEL_ALIAS",
-    "champion",
+    "production",
 )
 
 
 class ModelLoader:
     def __init__(self) -> None:
+        if not MLFLOW_TRACKING_URI.strip():
+            raise ValueError(
+                "MLFLOW_TRACKING_URI must not be empty."
+            )
+        if not MODEL_NAME.strip():
+            raise ValueError(
+                "MLFLOW_MODEL_NAME must not be empty."
+            )
+        if not MODEL_ALIAS.strip():
+            raise ValueError(
+                "MLFLOW_MODEL_ALIAS must not be empty."
+            )
+
         self.model: Any | None = None
 
     def load(self) -> Any:

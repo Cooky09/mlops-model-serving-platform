@@ -4,7 +4,12 @@ import time
 from fastapi import FastAPI, HTTPException, Response
 from prometheus_client import Counter, Histogram, generate_latest
 
-from app.model_loader import MODEL_ALIAS, MODEL_NAME, model_loader
+from app.model_loader import (
+    MLFLOW_TRACKING_URI,
+    MODEL_ALIAS,
+    MODEL_NAME,
+    model_loader,
+)
 from app.schemas import PredictionRequest, PredictionResponse
 
 logger = logging.getLogger(__name__)
@@ -85,11 +90,7 @@ def model_info() -> dict[str, str]:
     response = {
         "model_name": MODEL_NAME,
         "model_alias": MODEL_ALIAS,
-        "tracking_uri": (
-            "http://mlflow:5000"
-            if MODEL_NAME
-            else ""
-        ),
+        "tracking_uri": MLFLOW_TRACKING_URI,
     }
 
     REQUEST_COUNT.labels(
