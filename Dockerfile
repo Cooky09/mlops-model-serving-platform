@@ -1,18 +1,23 @@
 FROM python:3.14-slim
 
-WORKDIR /app
-
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+
+WORKDIR /app
 
 COPY requirements.txt .
 
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 
-COPY app ./app
-COPY ml ./ml
-COPY pyproject.toml .
+COPY --chown=app:app app ./app
+COPY --chown=app:app ml ./ml
+COPY --chown=app:app pyproject.toml .
+
+RUN useradd --create-home app \
+    && chown -R app:app /app
+
+USER app
 
 EXPOSE 8000
 
