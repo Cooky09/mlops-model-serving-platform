@@ -26,7 +26,7 @@ services:
     environment:
       MLFLOW_TRACKING_URI: http://mlflow:5000
       MLFLOW_MODEL_NAME: ticket_classifier
-      MLFLOW_MODEL_ALIAS: champion
+      MLFLOW_MODEL_ALIAS: production
     depends_on:
       - mlflow
 

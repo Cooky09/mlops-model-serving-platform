@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
-from app.main import app
+from app.main import MLFLOW_TRACKING_URI, app
 
 client = TestClient(app)
 @patch("app.main.model_loader.is_healthy", return_value=True)
@@ -22,7 +22,8 @@ def test_model_metadata():
     response = client.get("/model")
     assert response.status_code == 200
     assert response.json()["model_name"] == "ticket_classifier"
-    assert response.json()["model_alias"] == "champion"
+    assert response.json()["model_alias"] == "production"
+    assert response.json()["tracking_uri"] == MLFLOW_TRACKING_URI
 def test_model_info_logs_request(caplog):
     with caplog.at_level("INFO"):
         response = client.get("/model")
