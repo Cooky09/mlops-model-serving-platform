@@ -26,4 +26,35 @@ jobs:
         uses: azure/cli@v2
         with:
           inlineScript: |
-            az containerapp update               --name "${{ secrets.AZURE_CONTAINER_APP_NAME }}"               --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}"               --image "${{ secrets.ACR_LOGIN_SERVER }}/mlops-model-api:${{ github.sha }}"
+            az containerapp update \
+              --name "${{ secrets.AZURE_CONTAINER_APP_NAME }}" \
+              --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
+              --image "${{ secrets.ACR_LOGIN_SERVER }}/mlops-model-api:${{ github.sha }}" \
+              --set-env-vars \
+                MLFLOW_TRACKING_URI="${{ secrets.MLFLOW_TRACKING_URI }}" \
+                MLFLOW_MODEL_NAME="ticket_classifier" \
+                MLFLOW_MODEL_ALIAS="production"
+      - name: Check deployment health
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            FQDN=$(az containerapp show \
+              --name "${{ secrets.AZURE_CONTAINER_APP_NAME }}" \
+              --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
+              --query properties.configuration.ingress.fqdn \
+              --output tsv)
+
+            echo "Checking https://${FQDN}/health"
+
+            for i in {1..12}; do
+              if curl --fail --silent --show-error "https://${FQDN}/health"; then
+                echo "Deployment health check passed."
+                exit 0
+              fi
+
+              echo "Health check attempt ${i}/12 failed; waiting 10 seconds..."
+              sleep 10
+            done
+
+            echo "Deployment health check failed."
+            exit 1
