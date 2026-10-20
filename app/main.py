@@ -1,7 +1,8 @@
 import logging
+import os
 import time
 
-from fastapi import FastAPI, HTTPException, Response
+from fastapi import Depends, FastAPI, Header, HTTPException, Response
 from prometheus_client import Counter, Histogram, generate_latest
 
 from app.model_loader import (
@@ -13,6 +14,24 @@ from app.model_loader import (
 from app.schemas import PredictionRequest, PredictionResponse
 
 logger = logging.getLogger(__name__)
+
+API_KEY = os.getenv("API_KEY", "")
+
+def require_api_key(
+    x_api_key: str | None = Header(default=None),
+) -> None:
+    if not API_KEY:
+        raise HTTPException(
+            status_code=500,
+            detail="API authentication is not configured",
+        )
+
+    if x_api_key != API_KEY:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid or missing API key",
+        )
+
 REQUEST_COUNT = Counter(
     "api_requests_total",
     "Total number of API requests",
@@ -78,7 +97,9 @@ def health() -> dict[str, str]:
 
 
 @app.get("/model")
-def model_info() -> dict[str, str]:
+def model_info(
+    _: None = Depends(require_api_key),
+) -> dict[str, str]:
     start_time = time.perf_counter()
 
     logger.info(
@@ -119,9 +140,9 @@ def metrics() -> Response:
 )
 def predict(
     request: PredictionRequest,
+    _: None = Depends(require_api_key),
 ) -> PredictionResponse:
     start_time = time.perf_counter()
-
     logger.info(
         "Prediction requested: model=%s alias=%s",
         MODEL_NAME,
