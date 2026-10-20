@@ -1,6 +1,9 @@
 param location string = resourceGroup().location
 param environmentName string = 'mlops-env'
 param containerAppName string = 'mlops-model-api'
+param mlflowTrackingUri string
+param modelName string = 'ticket_classifier'
+param modelAlias string = 'production'
 
 resource environment 'Microsoft.App/managedEnvironments@2024-03-01' = {
   name: environmentName
@@ -25,6 +28,20 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
         {
           name: 'api'
           image: 'REPLACE_WITH_ACR_LOGIN_SERVER/mlops-model-api:latest'
+          env: [
+            {
+              name: 'MLFLOW_TRACKING_URI'
+              value: mlflowTrackingUri
+            }
+            {
+              name: 'MLFLOW_MODEL_NAME'
+              value: modelName
+            }
+            {
+              name: 'MLFLOW_MODEL_ALIAS'
+              value: modelAlias
+            }
+          ]
           resources: {
             cpu: json('0.5')
             memory: '1Gi'
